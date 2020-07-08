@@ -50,7 +50,12 @@ class WeedSearch(callbacks.Plugin):
 
         soup2 = bs4.BeautifulSoup(req2.text, 'html.parser')
 
-        thc = soup2.find('button', {'class': 'flex font-mono font-bold flex-row items-center ml-md'}).div.text
+        thc_tag = soup2.find('button', {'class': 'flex font-mono font-bold flex-row items-center ml-md'})
+        if thc_tag:
+            thc = thc_tag.div.text
+        else:
+            thc = '--%'
+        
 
         description = soup2.find('div', {'class': 'md:mb-xxl strain__description'}).p.text
 
