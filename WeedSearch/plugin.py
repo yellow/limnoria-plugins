@@ -41,7 +41,6 @@ class WeedSearch(callbacks.Plugin):
             return
 
         url = first_result['href']
-        print(url)
 
         req2 = requests.get(url)
         if req2.status_code != 200:
