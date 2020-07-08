@@ -28,7 +28,7 @@ class WeedSearch(callbacks.Plugin):
         channel = msg.args[0]
         strain = re.sub("[^\w\:\"\#\-\.' ]", "", strain).casefold()
 
-        req = requests.get(f'https://www.leafly.com/search?q={ strain }')
+        req = requests.get('https://www.leafly.com/search?q={}'.format(strain))
         if req.status_code != 200:
             irc.reply("Couldn't query leafly.com")
             return
@@ -51,14 +51,14 @@ class WeedSearch(callbacks.Plugin):
         soup2 = bs4.BeautifulSoup(req2.text, 'html.parser')
         description = soup2.find('div', {'class': 'md:mb-xxl strain__description'}).p.text
 
-        feelings = ""
+        feelings = ''
         feelings_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
 
         for feelings_row in feelings_soup:
             for feeling in feelings_row:
-                feelings += feeling.div.text + " "
+                feelings += feeling.div.text + ' '
 
-        irc.reply(f'Description: { description }\nFeelings: { feelings }')
+        irc.reply('Description: {} Feelings: {}'.format(description, feelings).replace('\xa0', ' '))
 
     strain = wrap(strain, ["text"])
 
