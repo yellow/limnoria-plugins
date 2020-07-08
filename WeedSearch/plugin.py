@@ -49,17 +49,24 @@ class WeedSearch(callbacks.Plugin):
             return
 
         soup2 = bs4.BeautifulSoup(req2.text, 'html.parser')
+
+        thc = soup2.find('button', {'class': 'flex font-mono font-bold flex-row items-center ml-md'}).div.text
+
         description = soup2.find('div', {'class': 'md:mb-xxl strain__description'}).p.text
 
-        feelings = []
-        feelings_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
+        effects_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
 
-        for feelings_row in feelings_soup:
-            for feeling in feelings_row:
-                feelings.append(feeling.div.text)
-        feelings = ', '.join(feelings)
+        effects = []
+        for idx, effects_row in enumerate(effects_soup):
+            effects.append([])
+            for effect in effects_row:
+                effects[idx].append(effect.div.text)
 
-        irc.reply('Description: {} Feelings: {}'.format(description, feelings).replace('\xa0', ' '))
+        effects_string = []
+        for effect_row in effects:
+            effects_string.append(', '.join(effect_row))
+
+        irc.reply('THC: {} DESCRIPTION: {} EFFECTS: Feelings: {} Helps with: {} Negatives: {}'.format(thc, description, *effects_string).replace('\xa0', ' '))
 
     strain = wrap(strain, ["text"])
 
