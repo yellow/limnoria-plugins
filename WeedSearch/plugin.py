@@ -51,12 +51,13 @@ class WeedSearch(callbacks.Plugin):
         soup2 = bs4.BeautifulSoup(req2.text, 'html.parser')
         description = soup2.find('div', {'class': 'md:mb-xxl strain__description'}).p.text
 
-        feelings = ''
+        feelings = []
         feelings_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
 
         for feelings_row in feelings_soup:
             for feeling in feelings_row:
-                feelings += feeling.div.text + ' '
+                feelings.append(feeling.div.text)
+        feelings = ', '.join(feelings)
 
         irc.reply('Description: {} Feelings: {}'.format(description, feelings).replace('\xa0', ' '))
 
