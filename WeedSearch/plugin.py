@@ -66,7 +66,7 @@ class WeedSearch(callbacks.Plugin):
         for effect_row in effects:
             effects_string.append(', '.join(effect_row))
 
-        irc.reply('THC: {} DESCRIPTION: {} EFFECTS: Feelings: {} Helps with: {} Negatives: {}'.format(thc, description, *effects_string).replace('\xa0', ' '))
+        irc.reply('\x02\x1FTHC:\x1F \x0313{}\x03 DESCRIPTION: {} EFFECTS: \x0310Feelings:\x03 {} \x0309Helps with:\x03 {} \x0304Negatives:\x03 {}'.format(thc, description, *effects_string).replace('\xa0', ' '))
 
     strain = wrap(strain, ["text"])
 
