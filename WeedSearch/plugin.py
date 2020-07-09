@@ -54,13 +54,14 @@ class WeedSearch(callbacks.Plugin):
             thc = thc_tag.div.text
         else:
             thc = '--%'
-        
+
+        name = soup2.find('h1', {'class': 'text-hero'}).text
 
         description = soup2.find('div', {'class': 'md:mb-xxl strain__description'}).p.text
 
         effects_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
         if not effects_soup:
-            irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02DESCRIPTION\x02: {}'.format(thc, description).replace('\xa0', ' '))
+            irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02{}\x02: {}'.format(thc, name, description).replace('\xa0', ' '))
             return
 
         effects = []
@@ -78,7 +79,7 @@ class WeedSearch(callbacks.Plugin):
             effects_string.append(', '.join(effect_row))
         print(effects_string)
 
-        irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02DESCRIPTION\x02: {} \x02\x0311EFFECTS\x03\x02: \x02\x0306Feelings\x03\x02: {} \x02\x0309Helps with\x03\x02: {} \x02\x0304Negatives\x03\x02: {}'.format(thc, description, *effects_string).replace('\xa0', ' '))
+        irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02{}\x02: {} \x02\x0311EFFECTS\x03\x02: \x02\x0306Feelings\x03\x02: {} \x02\x0309Helps with\x03\x02: {} \x02\x0304Negatives\x03\x02: {}'.format(thc, name, description, *effects_string).replace('\xa0', ' '))
 
     strain = wrap(strain, ["text"])
 
