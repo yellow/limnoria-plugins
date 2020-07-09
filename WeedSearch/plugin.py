@@ -69,7 +69,7 @@ class WeedSearch(callbacks.Plugin):
             for effect in effects_row:
                 effect_name = ' '.join(effect.div.text.split(' ')[:-1])
                 effect_percentage = effect.div.text.split(' ')[-1]
-                effect_percentage = '\x0307{}\x03'.format(effect_percentage)
+                # effect_percentage = '\x0307{}\x03'.format(effect_percentage)
                 colored_effect = '{} {}'.format(effect_name, effect_percentage)
                 effects[idx].append(colored_effect)
 
