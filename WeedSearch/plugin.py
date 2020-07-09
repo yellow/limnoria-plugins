@@ -61,6 +61,7 @@ class WeedSearch(callbacks.Plugin):
         effects_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
         if not effects_soup:
             irc.reply('\x02\x1FTHC:\x1F \x0313{}\x03 DESCRIPTION: {}'.format(thc, description).replace('\xa0', ' '))
+            return
 
         effects = []
         for idx, effects_row in enumerate(effects_soup):
