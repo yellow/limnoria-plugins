@@ -24,7 +24,7 @@ class WeedSearch(callbacks.Plugin):
     threaded = True
 
     def strain(self, irc, msg, args, strain):
-        """function searches for weed strain on leafly"""
+        """This plugin searches for details of a weed strain on leafly. For support, message aaa on EFnet."""
         channel = msg.args[0]
         strain = re.sub("[^\w\:\"\#\-\.' ]", "", strain).casefold()
 
