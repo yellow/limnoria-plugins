@@ -60,20 +60,24 @@ class WeedSearch(callbacks.Plugin):
 
         effects_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
         if not effects_soup:
-            irc.reply('\x02\x1FTHC:\x1F \x0313{}\x03 DESCRIPTION: {}'.format(thc, description).replace('\xa0', ' '))
+            irc.reply('THC: {} DESCRIPTION: {}'.format(thc, description).replace('\xa0', ' '))
             return
 
         effects = []
         for idx, effects_row in enumerate(effects_soup):
             effects.append([])
             for effect in effects_row:
-                effects[idx].append(effect.div.text)
+                effect_name = ' '.join(effect.div.text.split(' ')[:-1])
+                effect_percentage = effect.div.text.split(' ')[-1]
+                # effect_percentage = '\x0307{}\x03'.format(effect_percentage)
+                colored_effect = '{} {}'.format(effect_name, effect_percentage)
+                effects[idx].append(colored_effect)
 
         effects_string = []
         for effect_row in effects:
             effects_string.append(', '.join(effect_row))
 
-        irc.reply('\x02\x1FTHC:\x1F \x0313{}\x03 DESCRIPTION: {} EFFECTS: \x0310Feelings:\x03 {} \x0309Helps with:\x03 {} \x0304Negatives:\x03 {}'.format(thc, description, *effects_string).replace('\xa0', ' '))
+        irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02DESCRIPTION\x02: {} \x02\x0311EFFECTS\x03\x02: \x02\x0306Feelings\x03\x02: {} \x02\x0309Helps with\x03\x02: {} \x02\x0304Negatives\x03\x02: {}'.format(thc, description, *effects_string).replace('\xa0', ' '))
 
     strain = wrap(strain, ["text"])
 
