@@ -22,10 +22,18 @@ import pprint
 import time
 import threading
 import os
+from chardet import detect
 
 class StreamlabsIRC(callbacks.Plugin):
     """Uses Streamlabs API to play ASCII in IRC channels requested by donations."""
     threaded = True
+
+    # https://stackoverflow.com/a/53851783
+    # get file encoding type
+    def get_encoding_type(self, file_name):
+        with open(file_name, 'rb') as f:
+            rawdata = f.read()
+        return detect(rawdata)['encoding']
 
     def scroll(self, ascii_name, donor_name, donation_amount):
         print('scroll')
@@ -35,9 +43,20 @@ class StreamlabsIRC(callbacks.Plugin):
         if ascii_filename in os.listdir(self.ascii_directory):
             print(ascii_name + ': ascii_found')
             self.irc.queueMsg(ircmsgs.privmsg(self.channel_name, '{} has requested the "{}" ascii by donating {}'.format(donor_name, ascii_name, donation_amount)))
-            print(os.path.join(self.ascii_directory, ascii_filename))
-            with open(os.path.join(self.ascii_directory, ascii_filename), 'r') as f:
-                for line in f.read().split('\n'):
+
+            ascii_filename_txt = os.path.join(self.ascii_directory, ascii_filename)
+            print(ascii_filename_txt)
+
+            from_codec = self.get_encoding_type(ascii_filename_txt)
+            print(from_codec)
+
+            with open(ascii_filename_txt, 'r', encoding=from_codec) as f:
+            # with open(os.path.join(self.ascii_directory, ascii_filename), 'r') as f:
+                # ascii_lines = f.read().encode('utf-8').split('\n')
+                # ascii_text = f.read().encode('utf-8')
+                ascii_text = f.read()
+                ascii_lines = ascii_text.replace('\r\n', '\n').split('\n')
+                for line in ascii_lines:
                     self.irc.queueMsg(ircmsgs.privmsg(self.channel_name, line))
         else:
             self.irc.queueMsg(ircmsgs.privmsg(self.channel_name, '"{}" ascii not found :<'.format(ascii_name)))
