@@ -25,60 +25,63 @@ class WeedSearch(callbacks.Plugin):
 
     def strain(self, irc, msg, args, strain):
         """(strain <strain_name) -- Queries for details of a weed strain on leafly. For support, message aaa on EFnet."""
-        channel = msg.args[0]
-        strain = re.sub("[^\w\:\"\#\-\.' ]", "", strain).casefold()
+        try:
+            channel = msg.args[0]
+            strain = re.sub("[^\w\:\"\#\-\.' ]", "", strain).casefold()
 
-        req = requests.get('https://www.leafly.com/search?q={}'.format(strain))
-        if req.status_code != 200:
-            irc.reply("Couldn't query leafly.com")
-            return
+            req = requests.get('https://www.leafly.com/search?q={}'.format(strain))
+            if req.status_code != 200:
+                irc.reply("Couldn't query leafly.com")
+                return
 
-        soup = bs4.BeautifulSoup(req.text, 'html.parser')
-        first_result = soup.find('a', {'class': 'jsx-3613316329'})
+            soup = bs4.BeautifulSoup(req.text, 'html.parser')
+            first_result = soup.find('a', {'class': 'jsx-3613316329'})
 
-        if not first_result:
-            irc.reply("Couldn't find your strain")
-            return
+            if not first_result:
+                irc.reply("Couldn't find your strain")
+                return
 
-        url = first_result['href']
+            url = first_result['href']
 
-        req2 = requests.get(url)
-        if req2.status_code != 200:
-            irc.reply("Couldn't query leafly.com")
-            return
+            req2 = requests.get(url)
+            if req2.status_code != 200:
+                irc.reply("Couldn't query leafly.com")
+                return
 
-        soup2 = bs4.BeautifulSoup(req2.text, 'html.parser')
+            soup2 = bs4.BeautifulSoup(req2.text, 'html.parser')
 
-        thc_tag = soup2.find('button', {'class': 'flex font-mono font-bold flex-row items-center ml-md'})
-        if thc_tag:
-            thc = thc_tag.div.text
-        else:
-            thc = '--%'
+            thc_tag = soup2.find('button', {'class': 'flex font-mono font-bold flex-row items-center ml-md'})
+            if thc_tag:
+                thc = thc_tag.div.text
+            else:
+                thc = '--%'
 
-        name = soup2.find('h1', {'class': 'text-hero'}).text
+            name = soup2.find('h1', {'class': 'text-hero'}).text
 
-        description = soup2.find('div', {'class': 'md:mb-xxl strain__description'}).p.text
+            description = soup2.find('div', {'class': 'md:mb-xxl strain__description'}).p.text
 
-        effects_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
-        if not effects_soup:
-            irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02{}\x02: {}'.format(thc, name, description).replace('\xa0', ' '))
-            return
+            effects_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
+            if not effects_soup:
+                irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02{}\x02: {}'.format(thc, name, description).replace('\xa0', ' '))
+                return
 
-        effects = []
-        for idx, effects_row in enumerate(effects_soup):
-            effects.append([])
-            for effect in effects_row:
-                effect_name = ' '.join(effect.div.text.split(' ')[:-1])
-                effect_percentage = effect.div.text.split(' ')[-1]
-                # effect_percentage = '\x0307{}\x03'.format(effect_percentage)
-                colored_effect = '{} {}'.format(effect_name, effect_percentage)
-                effects[idx].append(colored_effect)
+            effects = []
+            for idx, effects_row in enumerate(effects_soup):
+                effects.append([])
+                for effect in effects_row:
+                    effect_name = ' '.join(effect.div.text.split(' ')[:-1])
+                    effect_percentage = effect.div.text.split(' ')[-1]
+                    # effect_percentage = '\x0307{}\x03'.format(effect_percentage)
+                    colored_effect = '{} {}'.format(effect_name, effect_percentage)
+                    effects[idx].append(colored_effect)
 
-        effects_string = []
-        for effect_row in effects:
-            effects_string.append(', '.join(effect_row))
+            effects_string = []
+            for effect_row in effects:
+                effects_string.append(', '.join(effect_row))
 
-        irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02{}\x02: {} \x02\x0311EFFECTS\x03\x02: \x02\x0306Feelings\x03\x02: {} \x02\x0309Helps with\x03\x02: {} \x02\x0304Negatives\x03\x02: {}'.format(thc, name, description, *effects_string).replace('\xa0', ' '))
+            irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02{}\x02: {} \x02\x0311EFFECTS\x03\x02: \x02\x0306Feelings\x03\x02: {} \x02\x0309Helps with\x03\x02: {} \x02\x0304Negatives\x03\x02: {}'.format(thc, name, description, *effects_string).replace('\xa0', ' '))
+        except Exception as e:
+            irc.reply('What have you been smoking?')
 
     strain = wrap(strain, ["text"])
 
