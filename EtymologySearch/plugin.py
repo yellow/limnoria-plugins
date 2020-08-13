@@ -5,7 +5,7 @@
 #
 ###
 
-from supybot import utils, plugins, ircutils, callbacks
+from supybot import utils, plugins, ircutils, callbacks, log
 from supybot.commands import *
 try:
     from supybot.i18n import PluginInternationalization
@@ -39,12 +39,12 @@ class EtymologySearch(callbacks.Plugin):
             irc_reply = ""
             for word in word_soup:
                 irc_reply += "{}: {} ".format(word.div.h1.text, word.div.section.text)
-            print(irc_reply)
+            log.info(irc_reply)
 
             irc.reply(irc_reply)
 
         except Exception as e:
-            print(e)
+            log.exception()
             irc.reply("Error! Send the log to Druid@Freenode")
 
     etym = wrap(etym, ["text"])
