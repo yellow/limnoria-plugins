@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2020, TripleA
+# Copyright (c) 2020, Druid
 # All rights reserved.
 #
 #
