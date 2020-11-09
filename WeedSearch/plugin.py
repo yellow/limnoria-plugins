@@ -18,6 +18,7 @@ except ImportError:
 import requests
 import bs4
 import re
+import json
 
 class WeedSearch(callbacks.Plugin):
     """This plugin parses leafly and returns the details of a weed strain on IRC."""
@@ -29,20 +30,37 @@ class WeedSearch(callbacks.Plugin):
             channel = msg.args[0]
             strain = re.sub("[^\w\:\"\#\-\.' ]", "", strain).casefold()
 
-            req = requests.get('https://www.leafly.com/search?q={}'.format(strain))
-            if req.status_code != 200:
+            ########
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.0',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Content-Type': 'application/json;charset=utf-8',
+                'Origin': 'https://www.leafly.com',
+                'DNT': '1',
+                'Connection': 'keep-alive',
+                'Referer': 'https://www.leafly.com/search?q=kush&page=1',
+                'TE': 'Trailers',
+                'Pragma': 'no-cache',
+                'Cache-Control': 'no-cache',
+            }
+
+            data = {"params":{"lat": 0,"lon": 0,"q": strain,"skip":0,"take":7,"filter":{"type":["strain"]}}}
+            response = requests.post('https://www.leafly.com/web-home/api/search', headers=headers, data=json.dumps(data))
+            if response.status_code != 200:
                 irc.reply("Couldn't query leafly.com")
                 return
 
-            soup = bs4.BeautifulSoup(req.text, 'html.parser')
-            first_result = soup.find('a', {'class': 'jsx-3613316329'})
+            search_api = json.loads(response.text)
+            strain_list = [i['slug'] for i in search_api['results']['strain']]
 
-            if not first_result:
-                irc.reply("Couldn't find your strain")
+            if not strain_list:
+                irc.reply('What have you been smoking?')
                 return
+            first_result = strain_list[0]
+            url = 'https://www.leafly.com/strains/{}'.format(first_result)
 
-            url = first_result['href']
-
+            ########
             req2 = requests.get(url)
             if req2.status_code != 200:
                 irc.reply("Couldn't query leafly.com")
@@ -50,38 +68,48 @@ class WeedSearch(callbacks.Plugin):
 
             soup2 = bs4.BeautifulSoup(req2.text, 'html.parser')
 
-            thc_tag = soup2.find('button', {'class': 'flex font-mono font-bold flex-row items-center ml-md'})
-            if thc_tag:
-                thc = thc_tag.div.text
+            name_tag = soup2.find('h1', {'itemprop': 'name'})
+            if name_tag:
+                name_text = 'Name: {}'.format(name_tag.text)
             else:
-                thc = '--%'
+                name_text = ''
 
-            name = soup2.find('h1', {'class': 'text-hero'}).text
+            thc_tag = soup2.find('button', {'class': 'text-xs bg-deep-green-20 py-sm px-sm rounded'})
+            if thc_tag:
+                thc_text = 'THC: {}'.format(thc_tag.text.split(' ')[1])
+            else:
+                thc_text = ''
 
-            description = soup2.find('div', {'class': 'md:mb-xxl strain__description'}).p.text
+            description_tag = soup2.find('div', {'itemprop': 'description'})
+            if description_tag:
+                description_text = 'Description: {}'.format(description_tag.text)
+            else:
+                description_text = ''
 
-            effects_soup = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
-            if not effects_soup:
-                irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02{}\x02: {}'.format(thc, name, description).replace('\xa0', ' '))
-                return
+            effects_tag = soup2.find('div', {'class': 'react-tabs__tab-panel-container mt-md'})
+            if effects_tag:
+                effects = []
+                for idx, effects_row in enumerate(effects_tag):
+                    effects.append([])
+                    for effect in effects_row:
+                        effect_name = ' '.join(effect.div.text.split(' ')[:-1])
+                        effect_percentage = effect.div.text.split(' ')[-1]
+                        # effect_percentage = '\x0307{}\x03'.format(effect_percentage)
+                        colored_effect = '{} {}'.format(effect_name, effect_percentage)
+                        effects[idx].append(colored_effect)
 
-            effects = []
-            for idx, effects_row in enumerate(effects_soup):
-                effects.append([])
-                for effect in effects_row:
-                    effect_name = ' '.join(effect.div.text.split(' ')[:-1])
-                    effect_percentage = effect.div.text.split(' ')[-1]
-                    # effect_percentage = '\x0307{}\x03'.format(effect_percentage)
-                    colored_effect = '{} {}'.format(effect_name, effect_percentage)
-                    effects[idx].append(colored_effect)
+                effects_string = []
+                for effect_row in effects:
+                    effects_string.append(', '.join(effect_row))
+                effects_full_string = 'Feelings: {} Helps With: {} Negatives: {}'.format(*effects_string)
+            else:
+                effects_full_string = ''
 
-            effects_string = []
-            for effect_row in effects:
-                effects_string.append(', '.join(effect_row))
+            reply_string = ' '.join([name_text, thc_text, description_text, effects_full_string])
 
-            irc.reply('\x02\x0309THC\x03\x02: \x0307{}\x03 \x02{}\x02: {} \x02\x0311EFFECTS\x03\x02: \x02\x0306Feelings\x03\x02: {} \x02\x0309Helps with\x03\x02: {} \x02\x0304Negatives\x03\x02: {}'.format(thc, name, description, *effects_string).replace('\xa0', ' '))
+            irc.reply(reply_string)
         except Exception as e:
-            irc.reply('What have you been smoking?')
+            irc.reply(f'Error { e }')
 
     strain = wrap(strain, ["text"])
 
