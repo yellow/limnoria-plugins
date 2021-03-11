@@ -49,7 +49,10 @@ class Xtracter(callbacks.Plugin):
     threaded = True
 
     def xtract(self, irc, msg, args, url, xpath):
-        """queries url and returns text from xpath"""
+        """[url] [xpath]
+
+        Queries url and returns text from xpath.
+        """
         try:
             response = requests.get(url, stream = True)
             response.raw.decode_content = True
