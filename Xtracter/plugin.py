@@ -63,14 +63,15 @@ class Xtracter(callbacks.Plugin):
             tag = tags[0]
 
             result_text = tag.text
-
-            irc.reply(f"Result: { result_text }")
+            
+            #TODO format this properly
+            irc.reply(f"{ result_text }")
 
         except Exception as e:
             log.exception()
             irc.reply("Error!")
 
-    xtract = wrap(xtract, ["text", "text"])
+    xtract = wrap(xtract, ["url", "text"])
 
 Class = Xtracter
 
