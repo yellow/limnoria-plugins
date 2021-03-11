@@ -53,27 +53,23 @@ class Xtracter(callbacks.Plugin):
 
         Queries url and returns text from xpath.
         """
-        try:
-            response = requests.get(url, stream = True)
-            response.raw.decode_content = True
+        response = requests.get(url, stream = True)
+        response.raw.decode_content = True
 
-            tree = lxml.html.parse(response.raw)
-            tags = tree.xpath(xpath)
+        tree = lxml.html.parse(response.raw)
+        tags = tree.xpath(xpath)
 
-            if len(tags) == 0:
-                irc.reply("No results found.")
-                return
-            tag = tags[0]
+        if len(tags) == 0:
+            irc.reply("No results found.")
+            return
 
-            # https://stackoverflow.com/a/11963661
-            result_text = tag.text_content()
-            
-            #TODO format this properly
-            irc.reply(f"{ result_text }")
+        tag = tags[0]
 
-        except Exception as e:
-            log.exception()
-            irc.reply("Error!")
+        # https://stackoverflow.com/a/11963661
+        result_text = tag.text_content()
+        
+        #TODO format this properly
+        irc.reply(result_text)
 
     xtract = wrap(xtract, ["httpUrl", "text"])
 
