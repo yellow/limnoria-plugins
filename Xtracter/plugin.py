@@ -65,6 +65,7 @@ class Xtracter(callbacks.Plugin):
                 return
             tag = tags[0]
 
+            # https://stackoverflow.com/a/11963661
             result_text = tag.text_content()
             
             #TODO format this properly
