@@ -65,7 +65,7 @@ class Xtracter(callbacks.Plugin):
                 return
             tag = tags[0]
 
-            result_text = tag.text
+            result_text = tag.text_content()
             
             #TODO format this properly
             irc.reply(f"{ result_text }")
@@ -74,7 +74,7 @@ class Xtracter(callbacks.Plugin):
             log.exception()
             irc.reply("Error!")
 
-    xtract = wrap(xtract, ["url", "text"])
+    xtract = wrap(xtract, ["httpUrl", "text"])
 
 Class = Xtracter
 
