@@ -63,10 +63,8 @@ class Xtracter(callbacks.Plugin):
             irc.reply("No results found.")
             return
 
-        tag = tags[0]
-
         # https://stackoverflow.com/a/11963661
-        result_text = tag.text_content()
+        result_text = '\n'.join([tag.text_content() for tag in tags])
         
         #TODO format this properly
         irc.reply(result_text)
